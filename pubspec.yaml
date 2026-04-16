@@ -1,0 +1,21 @@
+name: flutter_genui_kit
+description: Runtime GenUI toolkit for Flutter with safe AI-driven widget generation, fallbacks, and live preview tooling.
+version: 1.0.0
+homepage: https://github.com/viktorvoltz/flutter_genui_kit
+repository: https://github.com/viktorvoltz/flutter_genui_kit
+issue_tracker: https://github.com/viktorvoltz/flutter_genui_kit/issues
+
+environment:
+  sdk: ">=3.3.0 <4.0.0"
+  flutter: ">=3.24.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^5.0.0
+
+flutter:
