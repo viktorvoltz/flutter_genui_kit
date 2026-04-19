@@ -115,12 +115,14 @@ Widget _buildCenter(BuildContext context, GenUiNode node, List<Widget> children)
 
 Widget _buildColumn(BuildContext context, GenUiNode node, List<Widget> children) {
   final spacing = _parseDimension(context, node.properties['spacing']) ?? 0;
-  return Column(
-    mainAxisSize: _parseMainAxisSize(node.stringProp('mainAxisSize')),
-    mainAxisAlignment: _parseMainAxisAlignment(node.stringProp('mainAxisAlignment')),
-    crossAxisAlignment:
-        _parseCrossAxisAlignment(node.stringProp('crossAxisAlignment')),
-    children: _withSpacing(children, spacing, axis: Axis.vertical),
+  return SingleChildScrollView(
+    child: Column(
+      mainAxisSize: _parseMainAxisSize(node.stringProp('mainAxisSize')),
+      mainAxisAlignment: _parseMainAxisAlignment(node.stringProp('mainAxisAlignment')),
+      crossAxisAlignment:
+          _parseCrossAxisAlignment(node.stringProp('crossAxisAlignment')),
+      children: _withSpacing(children, spacing, axis: Axis.vertical),
+    ),
   );
 }
 
