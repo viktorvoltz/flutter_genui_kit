@@ -66,13 +66,15 @@ class _GenUiLivePreviewState extends State<GenUiLivePreview> {
           builder: (context, constraints) {
             final isCompact = constraints.maxWidth < 900;
 
-            final controls = _PreviewControls(
-              title: widget.title,
-              controller: widget.controller,
-              textController: _textController,
-              promptHint: widget.promptHint,
-              submitLabel: widget.submitLabel,
-              onSubmit: _submit,
+            final controls = SingleChildScrollView(
+              child: _PreviewControls(
+                title: widget.title,
+                controller: widget.controller,
+                textController: _textController,
+                promptHint: widget.promptHint,
+                submitLabel: widget.submitLabel,
+                onSubmit: _submit,
+              ),
             );
 
             final preview = ClipRRect(
@@ -102,9 +104,9 @@ class _GenUiLivePreviewState extends State<GenUiLivePreview> {
               child: isCompact
                   ? Column(
                       children: <Widget>[
-                        controls,
+                        Expanded(flex: 2, child: controls),
                         const SizedBox(height: 20),
-                        Expanded(child: preview),
+                        Expanded(flex: 3, child: preview),
                       ],
                     )
                   : Row(
@@ -162,148 +164,164 @@ class _PreviewControls extends StatelessWidget {
               GenUiStatus.idle => const Color(0xFFD7C7B6),
             };
 
-            return Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: <Widget>[
-                Text(
-                  title,
-                  style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                        color: Colors.white,
-                        fontWeight: FontWeight.w700,
-                      ),
-                ),
-                const SizedBox(height: 12),
-                Text(
-                  'Prompt your runtime UI, validate the payload, and keep the last good screen alive when generation goes sideways.',
-                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        color: const Color(0xFFD7C7B6),
-                        height: 1.5,
-                      ),
-                ),
-                const SizedBox(height: 20),
-                DecoratedBox(
-                  decoration: BoxDecoration(
-                    color: statusColor.withOpacity(0.14),
-                    borderRadius: BorderRadius.circular(999),
-                    border: Border.all(color: statusColor),
-                  ),
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                    child: Text(
-                      'Status: ${state.status.name}',
-                      style: TextStyle(
-                        color: statusColor,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 20),
-                TextField(
-                  controller: textController,
-                  maxLines: 8,
-                  minLines: 6,
-                  style: const TextStyle(color: Colors.white),
-                  decoration: InputDecoration(
-                    hintText: promptHint,
-                    hintStyle: const TextStyle(color: Color(0xFF9F968A)),
-                    filled: true,
-                    fillColor: const Color(0xFF26231F),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(20),
-                      borderSide: BorderSide.none,
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 16),
-                SizedBox(
-                  width: double.infinity,
-                  child: FilledButton(
-                    onPressed: state.status == GenUiStatus.loading ? null : onSubmit,
-                    style: FilledButton.styleFrom(
-                      backgroundColor: const Color(0xFFA24B2A),
-                      foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(vertical: 18),
-                    ),
-                    child: Text(submitLabel),
-                  ),
-                ),
-                const SizedBox(height: 20),
-                if (state.errorMessage != null)
-                  Container(
-                    width: double.infinity,
-                    padding: const EdgeInsets.all(14),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFF33211E),
-                      borderRadius: BorderRadius.circular(16),
-                      border: Border.all(color: const Color(0xFFA24B2A)),
-                    ),
-                    child: Text(
-                      state.errorMessage!,
-                      style: const TextStyle(color: Color(0xFFF8D9CC)),
-                    ),
-                  ),
-                if (state.diagnostics.hasWarnings) ...<Widget>[
-                  const SizedBox(height: 20),
-                  Text(
-                    'Diagnostics',
-                    style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                          color: Colors.white,
-                          fontWeight: FontWeight.w700,
+            return LayoutBuilder(
+              builder: (context, constraints) {
+                final canUseFlex = constraints.hasBoundedHeight;
+                final payloadView = state.rawPayload == null
+                    ? null
+                    : DecoratedBox(
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF12110F),
+                          borderRadius: BorderRadius.circular(20),
                         ),
-                  ),
-                  const SizedBox(height: 10),
-                  Container(
-                    width: double.infinity,
-                    padding: const EdgeInsets.all(14),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFF171614),
-                      borderRadius: BorderRadius.circular(16),
-                      border: Border.all(color: const Color(0xFF4B463F)),
-                    ),
-                    child: Text(
-                      [
-                        ...state.diagnostics.appliedMigrations.map(
-                          (migration) => 'Migration applied: $migration',
+                        child: SingleChildScrollView(
+                          padding: const EdgeInsets.all(16),
+                          child: SelectableText(
+                            state.rawPayload!,
+                            style: const TextStyle(
+                              color: Color(0xFFD7C7B6),
+                              fontFamily: 'monospace',
+                              height: 1.4,
+                            ),
+                          ),
                         ),
-                        ...state.diagnostics.warnings,
-                      ].join('\n'),
-                      style: const TextStyle(color: Color(0xFFD7C7B6), height: 1.5),
-                    ),
-                  ),
-                ],
-                if (state.rawPayload != null) ...<Widget>[
-                  const SizedBox(height: 20),
-                  Text(
-                    'Last payload',
-                    style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                          color: Colors.white,
-                          fontWeight: FontWeight.w700,
-                        ),
-                  ),
-                  const SizedBox(height: 10),
-                  Expanded(
-                    child: DecoratedBox(
-                      decoration: BoxDecoration(
-                        color: const Color(0xFF12110F),
-                        borderRadius: BorderRadius.circular(20),
+                      );
+
+                return SingleChildScrollView(
+                  child: Column(
+                    mainAxisSize: canUseFlex ? MainAxisSize.max : MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: <Widget>[
+                      Text(
+                        title,
+                        style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                              color: Colors.white,
+                              fontWeight: FontWeight.w700,
+                            ),
                       ),
-                      child: SingleChildScrollView(
-                        padding: const EdgeInsets.all(16),
-                        child: SelectableText(
-                          state.rawPayload!,
-                          style: const TextStyle(
-                            color: Color(0xFFD7C7B6),
-                            fontFamily: 'monospace',
-                            height: 1.4,
+                      const SizedBox(height: 12),
+                      Text(
+                        'Prompt your runtime UI, validate the payload, and keep the last good screen alive when generation goes sideways.',
+                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                              color: const Color(0xFFD7C7B6),
+                              height: 1.5,
+                            ),
+                      ),
+                      const SizedBox(height: 20),
+                      DecoratedBox(
+                        decoration: BoxDecoration(
+                          color: statusColor.withOpacity(0.14),
+                          borderRadius: BorderRadius.circular(999),
+                          border: Border.all(color: statusColor),
+                        ),
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                          child: Text(
+                            'Status: ${state.status.name}',
+                            style: TextStyle(
+                              color: statusColor,
+                              fontWeight: FontWeight.w600,
+                            ),
                           ),
                         ),
                       ),
-                    ),
+                      const SizedBox(height: 20),
+                      TextField(
+                        controller: textController,
+                        maxLines: 8,
+                        minLines: 6,
+                        style: const TextStyle(color: Colors.white),
+                        decoration: InputDecoration(
+                          hintText: promptHint,
+                          hintStyle: const TextStyle(color: Color(0xFF9F968A)),
+                          filled: true,
+                          fillColor: const Color(0xFF26231F),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(20),
+                            borderSide: BorderSide.none,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      SizedBox(
+                        width: double.infinity,
+                        child: FilledButton(
+                          onPressed: state.status == GenUiStatus.loading ? null : onSubmit,
+                          style: FilledButton.styleFrom(
+                            backgroundColor: const Color(0xFFA24B2A),
+                            foregroundColor: Colors.white,
+                            padding: const EdgeInsets.symmetric(vertical: 18),
+                          ),
+                          child: Text(submitLabel),
+                        ),
+                      ),
+                      const SizedBox(height: 20),
+                      if (state.errorMessage != null)
+                        Container(
+                          width: double.infinity,
+                          padding: const EdgeInsets.all(14),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFF33211E),
+                            borderRadius: BorderRadius.circular(16),
+                            border: Border.all(color: const Color(0xFFA24B2A)),
+                          ),
+                          child: Text(
+                            state.errorMessage!,
+                            style: const TextStyle(color: Color(0xFFF8D9CC)),
+                          ),
+                        ),
+                      if (state.diagnostics.hasWarnings) ...<Widget>[
+                        const SizedBox(height: 20),
+                        Text(
+                          'Diagnostics',
+                          style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                                color: Colors.white,
+                                fontWeight: FontWeight.w700,
+                              ),
+                        ),
+                        const SizedBox(height: 10),
+                        Container(
+                          width: double.infinity,
+                          padding: const EdgeInsets.all(14),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFF171614),
+                            borderRadius: BorderRadius.circular(16),
+                            border: Border.all(color: const Color(0xFF4B463F)),
+                          ),
+                          child: Text(
+                            [
+                              ...state.diagnostics.appliedMigrations.map(
+                                (migration) => 'Migration applied: $migration',
+                              ),
+                              ...state.diagnostics.warnings,
+                            ].join('\n'),
+                            style: const TextStyle(
+                              color: Color(0xFFD7C7B6),
+                              height: 1.5,
+                            ),
+                          ),
+                        ),
+                      ],
+                      if (payloadView != null) ...<Widget>[
+                        const SizedBox(height: 20),
+                        Text(
+                          'Last payload',
+                          style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                                color: Colors.white,
+                                fontWeight: FontWeight.w700,
+                              ),
+                        ),
+                        const SizedBox(height: 10),
+                        if (canUseFlex)
+                          Expanded(child: payloadView)
+                        else
+                          payloadView,
+                      ] else if (canUseFlex)
+                        const Spacer(),
+                    ],
                   ),
-                ] else
-                  const Spacer(),
-              ],
+                );
+              },
             );
           },
         ),
