@@ -371,13 +371,3 @@ return GenUiLivePreview(
   themeTokens: tokens,
 );
 ```
-
-## Current limitations
-
-- Runtime schema is intentionally smaller than Flutter’s full widget set
-- Text style token support is intentionally narrow in v1
-- This version focuses on mobile-safe runtime rendering, not code generation
-
-## V1 Status
-
-This package is now a solid base for guarded runtime UI experiments, internal tools, and AI-assisted prototyping on top of a real design system.

@@ -1,5 +1,8 @@
 # Changelog
 
+## 1.0.1
+- Better ReadMe doc.
+
 ## 1.0.0
 
 - Added semantic action dispatching with `GenUiActionRegistry`.
